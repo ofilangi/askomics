@@ -1,0 +1,5 @@
+SELECT DISTINCT ?entity ?property ?value
+WHERE {
+	    ?entity ?property ?value.
+      VALUES ?entity { $entities }
+}
