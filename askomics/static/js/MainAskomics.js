@@ -200,7 +200,7 @@ function loadStatistics() {
 
     for (let ent1 in entities ) {
       let tr = $("<tr></tr>")
-            .append($("<td></td>").text(new AskomicsUserAbstraction().getAttrib(entities[ent1],'rdfs:label')));
+            .append($("<td></td>").text(new AskomicsUserAbstraction().getAttribEntity(entities[ent1],new AskomicsUserAbstraction().longRDF('rdfs:label'))));
             let rels = "";
             var t = new AskomicsUserAbstraction().getRelationsObjectsAndSubjectsWithURI(entities[ent1]);
             var subjectTarget = t[0];
@@ -228,7 +228,7 @@ function loadStatistics() {
     for (let ent1 in entities ) {
     //$.each(stats['class'], function(key, value) {
       let tr = $("<tr></tr>")
-            .append($("<td></td>").text(new AskomicsUserAbstraction().getAttrib(entities[ent1],'rdfs:label')));
+            .append($("<td></td>").text(new AskomicsUserAbstraction().getAttribEntity(entities[ent1],new AskomicsUserAbstraction().longRDF('rdfs:label'))));
             let attrs = "";
             let cats = "";
             var listAtt = new AskomicsUserAbstraction().getAttributesEntity(entities[ent1]);

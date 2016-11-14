@@ -262,14 +262,14 @@ class SourceFile(ParamManager, HaveCachedProperties):
                     uri = 'position_'+key_type
                 else:
                     uri = urllib.parse.quote(self.headers[key])
-                ttl += ":" + uri + ' displaySetting:attribute "true"^^xsd:boolean .\n'
+                ttl += ":" + uri + ' askomicsns:attribute "true"^^xsd:boolean .\n'
 
             if key > 0 and key not in self.disabled_columns:
                 ttl += AbstractedRelation(key_type, self.headers[key], ref_entity, self.type_dict[key_type]).get_turtle()
 
         # Store the startpoint status
         if self.forced_column_types[0] == 'entity_start':
-            ttl += ":" + urllib.parse.quote(ref_entity) + ' displaySetting:startPoint "true"^^xsd:boolean .\n'
+            ttl += ":" + urllib.parse.quote(ref_entity) + ' askomicsns:startPoint "true"^^xsd:boolean .\n'
 
         return ttl
 
@@ -284,13 +284,15 @@ class SourceFile(ParamManager, HaveCachedProperties):
         ttl = ''
 
         if all(types in self.forced_column_types for types in ('start', 'end')): # a positionable entity have to have a start and a end
-            ttl += ":" + urllib.parse.quote(self.headers[0]) + ' displaySetting:is_positionable "true"^^xsd:boolean .\n'
-            ttl += ":is_positionable rdfs:label 'is_positionable' .\n"
-            ttl += ":is_positionable rdf:type owl:ObjectProperty .\n"
+            #ttl += ":" + urllib.parse.quote(self.headers[0]) + ' askomicsns:is_positionable "true"^^xsd:boolean ;\n'
+            ttl += ":" + urllib.parse.quote(self.headers[0]) + "askomicsns:hasOwnClassVisualisation 'AskomicsPositionableNode' .\n"
+            #ttl += ":is_positionable rdfs:label 'is_positionable' .\n"
+            #ttl += ":is_positionable rdf:type owl:ObjectProperty .\n"
+
 
         for header, categories in self.category_values.items():
-            indent = len(header) * " " + len("displaySetting:category") * " " + 3 * " "
-            ttl += ":" + urllib.parse.quote(header+"Category") + " displaySetting:category :"
+            indent = len(header) * " " + len("askomicsns:category") * " " + 3 * " "
+            ttl += ":" + urllib.parse.quote(header+"Category") + " askomicsns:category :"
             ttl += (" , \n" + indent + ":").join(map(urllib.parse.quote,categories)) + " .\n"
 
             for item in categories:

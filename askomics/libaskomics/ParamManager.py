@@ -15,8 +15,8 @@ class ParamManager(object):
         # Dev SPARQL files template
         # FIXME use a dict to store settings
         self.ASKOMICS_abstractionRelationUser = "abstractionRelationUserQuery.sparql"
-        self.ASKOMICS_abstractionEntityUser = "abstractionEntityUserQuery.sparql"
-        self.ASKOMICS_abstractionPositionableEntityUser = "abstractionPositionableEntityUserQuery.sparql"
+        self.ASKOMICS_abstractionsRelationsAndEntitiesUser = "abstractionRelationsAndEntitiesUserQuery.sparql"
+        self.ASKOMICS_abstractionAllproperties = "abstractionAllpropertiesQuery.sparql"
         self.ASKOMICS_abstractionAttributesEntityUser = "abstractionAttributesEntityUserQuery.sparql"
         self.ASKOMICS_abstractionCategoriesEntityUser = "abstractionCategoriesEntityUserQuery.sparql"
         self.ASKOMICS_initial_query = "initialQuery.sparql"
@@ -24,7 +24,7 @@ class ParamManager(object):
 
         self.ASKOMICS_prefix = {
                                 "": self.get_param("askomics.prefix"),
-                                "displaySetting": self.get_param("askomics.display_setting"),
+                                "askomicsns": self.get_param("askomics.askomicsns"),
                                 "xsd": """http://www.w3.org/2001/XMLSchema#""",
                                 "rdfs": """http://www.w3.org/2000/01/rdf-schema#""",
                                 "rdf": """http://www.w3.org/1999/02/22-rdf-syntax-ns#""",

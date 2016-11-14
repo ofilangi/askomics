@@ -409,6 +409,12 @@ class AskView(object):
         tse = TripleStoreExplorer(self.settings, self.request.session)
         data = tse.getUserAbstraction()
 
+        #adding prefix information
+        pm = ParamManager(self.settings, self.request.session)
+        data['prefix'] = {}
+        for key, value in pm.ASKOMICS_prefix.items():
+            data['prefix'][key] = value
+
         return data
 
 

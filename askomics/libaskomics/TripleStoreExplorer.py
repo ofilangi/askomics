@@ -56,7 +56,8 @@ class TripleStoreExplorer(ParamManager):
         :rtype:
         """
         data = {}
-        listEntities = {}
+        listEntities   = {}
+        listAttributes = {}
 
         self.log.debug(" =========== TripleStoreExplorer:getUserAbstraction ===========")
 
@@ -68,8 +69,8 @@ class TripleStoreExplorer(ParamManager):
         sqb = SparqlQueryBuilder(self.settings, self.session)
         ql = QueryLauncher(self.settings, self.session)
 
-        sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionRelationUser)
-        query = sqb.load_from_file(sparql_template, { 'OwlProperty' : 'owl:ObjectProperty'}).query
+        sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionsRelationsAndEntitiesUser)
+        query = sqb.load_from_file(sparql_template, {}).query
         results = ql.process_query(query)
 
         data['relations'] = results
@@ -80,20 +81,14 @@ class TripleStoreExplorer(ParamManager):
             if not elt['subject'] in listEntities:
                 listEntities[elt['subject']]=0
 
-        #sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionRelationUser)
-        #query = sqb.load_from_file(sparql_template, { 'OwlProperty' : 'owl:SymmetricProperty'}).query
-        #results = ql.process_query(query)
+        sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionRelationUser)
+        query = sqb.load_from_file(sparql_template, {}).query
+        results = ql.process_query(query)
 
-        #data['relationsSym'] = results
-
-        #for elt in results:
-        #    if not elt['object'] in listEntities:
-        #        listEntities[elt['object']]=0
-        #    if not elt['subject'] in listEntities:
-        #        listEntities[elt['subject']]=0
+        data['relationsInfo'] = results
 
         filterEntities = ' '.join(["<"+s+">" for s in listEntities.keys()])
-        sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionEntityUser)
+        sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionAllproperties)
         query = sqb.load_from_file(sparql_template, {"entities" : filterEntities }).query
         results = ql.process_query(query)
 
@@ -105,18 +100,25 @@ class TripleStoreExplorer(ParamManager):
 
         data['attributes'] = results
 
+        for elt in results:
+            if not elt['attribute'] in listAttributes:
+                listAttributes[elt['attribute']]=0
+
         sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionCategoriesEntityUser)
         query = sqb.load_from_file(sparql_template, {"entities" : filterEntities }).query
         results = ql.process_query(query)
 
         data['categories'] = results
 
-        sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionPositionableEntityUser)
-        query = sqb.load_from_file(sparql_template, {}).query
+        for elt in results:
+            if not elt['category'] in listAttributes:
+                listAttributes[elt['category']]=0
+
+        filterAttributes = ' '.join(["<"+s+">" for s in listAttributes.keys()])
+        sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionAllproperties)
+        query = sqb.load_from_file(sparql_template, {"entities" : filterAttributes }).query
         results = ql.process_query(query)
-
-        data['positionable'] = results
-
+        data['attributesInfo'] = results
 
         return data
     # build SPARQL Block following this grammar :
@@ -165,9 +167,9 @@ class TripleStoreExplorer(ParamManager):
         #    req += "FROM "+ "<"+graph+ ">"+"\n"
         req += "WHERE \n"
         req += self.buildRecursiveBlock('',constraintesRelations)
+
         if limit != None and limit >0 :
             req +=" LIMIT "+str(limit)
-
 
         sqb = SparqlQueryBuilder(self.settings, self.session)
         prefixes = sqb.header_sparql_config(req)

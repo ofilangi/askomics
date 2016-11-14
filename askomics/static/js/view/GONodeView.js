@@ -5,7 +5,7 @@
 */
 //var datalist_go_description_upload = false;
 
-class GONodeView extends AskomicsObjectView {
+class GONodeView extends AskomicsNodeView {
 
   constructor(node) {
     super(node);
@@ -29,18 +29,14 @@ class GONodeView extends AskomicsObjectView {
 
     //let tab = this.objet.buildListOfGODescriptionsSPARQL(filterStr);
     let spq = $.sparql(new TriplestoreParametersView().configuration('endpoint'));
+    let service = new AskomicsUserAbstraction().getAttribEntity(
+      new AskomicsUserAbstraction().longRDF("go:term"),
+      new AskomicsUserAbstraction().longRDF("askomicsns:hasUrlExternalService"));
 
-    spq.prefix("","http://www.semanticweb.org/irisa/ontologies/2016/1/igepp-ontology#")
-        .prefix("displaySetting","http://www.irisa.fr/dyliss/rdfVisualization/display")
-        .prefix("rdfs","http://www.w3.org/2000/01/rdf-schema#")
-        .prefix("rdfg","http://www.w3.org/2004/03/trix/rdfg-1/")
-        .prefix("xsd","http://www.w3.org/2001/XMLSchema#")
-        .prefix("owl","http://www.w3.org/2002/07/owl#")
-        .prefix("dc","http://purl.org/dc/elements/1.1/")
-        .prefix("rdf","http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-        .prefix("prov","http://www.w3.org/ns/prov#")
+    spq.prefix("askomicsns",new AskomicsUserAbstraction().getPrefix("askomicsns"))
+        .prefix("rdfs",new AskomicsUserAbstraction().getPrefix("rdfs"))
         .select(["?goid","?description","?oboid"])
-        .service(new GOParametersView().configuration('url_service'))
+        .service(service)
                   .where("?oboid","rdfs:label","?description")
                   .where("<http://www.geneontology.org/formats/oboInOwl#id>", "?goid")
                   .filter("regex(str(?description), \""+filterStr+"\", \"i\" ) ")
@@ -205,12 +201,15 @@ class GONodeView extends AskomicsObjectView {
               data.instance.get_node(data.selected[i]).children.length>0) continue;
 
          let spq = $.sparql(new TriplestoreParametersView().configuration('endpoint'));
+         let service = new AskomicsUserAbstraction().getAttribEntity(
+           new AskomicsUserAbstraction().longRDF("go:term"),
+           new AskomicsUserAbstraction().longRDF("askomicsns:hasUrlExternalService"));
 
-         spq.prefix("rdfs","http://www.w3.org/2000/01/rdf-schema#")
-           .prefix("rdf","http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-           .prefix("xsd","http://www.w3.org/2001/XMLSchema#")
+         spq.prefix("rdfs",new AskomicsUserAbstraction().getPrefix("rdfs"))
+           .prefix("rdf",new AskomicsUserAbstraction().getPrefix("rdf"))
+           .prefix("xsd",new AskomicsUserAbstraction().getPrefix("xsd"))
            .select(["?goid_child","?label_child"])
-           .service(new GOParametersView().configuration('url_service'))
+           .service(service)
                      .where("?oboid_root","<http://www.geneontology.org/formats/oboInOwl#id>", "?goid_root")
                      .values("?goid_root",["\""+data.instance.get_node(data.selected[i]).id+"\"^^xsd:string"])
                      .where("?oboid_child","rdfs:subClassOf","?oboid_root")
@@ -296,14 +295,72 @@ class GONodeView extends AskomicsObjectView {
   }
 
   create() {
-    this.divPanel() ;
+    let mythis = this;
+    var node = this.node;
+    this.divPanelUlSortable() ;
 
     this.details.append($('<div></div>').append(this.makeFilterStringOrJstreeIcon())
                                         .append(this.createDivGlobalSearch())
                                         .append(this.createDivJsTreeSearch()));
 
 
-      $("#viewDetails").append(this.details);
+    var attributes = new AskomicsUserAbstraction().getAttributesWithURI(node.uri);
+    console.log("ATTRIBUTES:"+attributes.length);
+
+    $.each(attributes, function(i) {
+                                            let attribute = node.getAttributeOrCategoryForNode(attributes[i]);
+
+                                            var lab = $("<label></label>").attr("uri",attribute.uri).attr("for",attribute.label).text(attribute.label);
+
+                                            if ( attribute.basic_type == "category" ) {
+                                              /* RemoveIcon, EyeIcon, Attribute IHM */
+                                              mythis.addPanel($('<div></div>')
+                                                     .attr("id",attribute.id)
+                                                     .attr("sparqlid",attribute.SPARQLid)
+                                                     .attr("uri",attribute.uri)
+                                                     .attr("basic_type",attribute.basic_type)
+                                                     .append(lab)
+                                                     .append(mythis.makeRemoveIcon())
+                                                     .append(mythis.makeEyeIcon(attribute))
+                                                     .append(mythis.makeNegativeMatchIcon('URICat'+attribute.SPARQLid))
+                                                     .append(mythis.makeLinkVariableIcon('URICat'+attribute.SPARQLid))
+                                                     .append(mythis.buildCategory(attribute))
+                                                     .append(mythis.buildLinkVariable(attribute)));
+                                            } else if ( attribute.basic_type == "decimal" ) {
+                                              /* RemoveIcon, EyeIcon, Attribute IHM */
+                                              mythis.addPanel($('<div></div>').append(lab)
+                                                     .attr("id",attribute.id)
+                                                     .attr("sparqlid",attribute.SPARQLid)
+                                                     .attr("uri",attribute.uri)
+                                                     .attr("basic_type",attribute.basic_type)
+                                                     .append(mythis.makeRemoveIcon())
+                                                     .append(mythis.makeEyeIcon(attribute))
+                                                     .append(mythis.makeNegativeMatchIcon(attribute.SPARQLid))
+                                                     .append(mythis.makeLinkVariableIcon(attribute.SPARQLid))
+                                                     .append(mythis.buildDecimal(attribute))
+                                                     .append(mythis.buildLinkVariable(attribute)));
+                                            } else if ( attribute.basic_type == "string" ) {
+                                              node.switchRegexpMode(attribute.SPARQLid);
+                                              /* RemoveIcon, EyeIcon, Attribute IHM */
+                                              mythis.addPanel($('<div></div>').append(lab)
+                                                     .attr("id",attribute.id)
+                                                     .attr("sparqlid",attribute.SPARQLid)
+                                                     .attr("uri",attribute.uri)
+                                                     .attr("basic_type",attribute.basic_type)
+                                                     .append(mythis.makeRemoveIcon())
+                                                     .append(mythis.makeEyeIcon(attribute))
+                                                     .append(mythis.makeRegExpIcon(attribute.SPARQLid))
+                                                     .append(mythis.makeNegativeMatchIcon(attribute.SPARQLid))
+                                                     .append(mythis.makeLinkVariableIcon(attribute.SPARQLid))
+                                                     .append(mythis.buildString(attribute.SPARQLid))
+                                                     .append(mythis.buildLinkVariable(attribute)));
+                                            } else {
+                                              throw typeof this + "::create . Unknown type attribute:"+ attribute.basic_type;
+                                            }
+                                            //$('#waitModal').modal('hide');
+                                        });
+
+    $("#viewDetails").append(this.details);
   }
 }
 

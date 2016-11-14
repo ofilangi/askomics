@@ -3,8 +3,8 @@ WHERE {
     GRAPH <urn:sparql:tests-askomics:insert:informative1> {
     ?g rdfg:subGraphOf <urn:sparql:tests-askomics:insert:informative1> }
     GRAPH ?g {
-        ?entity rdf:type owl:Class .
-	      ?attribute displaySetting:attribute "true"^^xsd:boolean .
+        ?entity askomicsns:entity "true"^^xsd:boolean .
+	      ?attribute askomicsns:attribute "true"^^xsd:boolean .
 
         ?attribute rdf:type owl:DatatypeProperty;
 					         rdfs:label ?labelAttribute ;

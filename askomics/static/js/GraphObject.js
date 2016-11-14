@@ -57,10 +57,7 @@ class GraphObject {
       throw "removePrefix: uri is not a string :"+JSON.stringify(uribase);
     }
 
-    if ( uribase.indexOf("#")>0 ) {
-      return '<'+uribase+">";
-    }
-    return uribase;
+    return '<'+uribase+">";
   }
 
   /* Get value of an attribut with RDF format like rdfs:label */

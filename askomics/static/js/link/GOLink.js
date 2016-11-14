@@ -20,8 +20,12 @@ class GOLink extends GraphLink {
 
     blockConstraintByNode.push('?URI'+this.source.SPARQLid+" "+rel+" "+'?tmp_URI'+this.target.SPARQLid);
     blockConstraintByNode.push("BIND (IRI ( REPLACE(str("+'?tmp_URI'+this.target.SPARQLid+"),\"GO:\",\"http://purl.obolibrary.org/obo/GO_\",\"i\")) AS "+'?URI'+this.target.SPARQLid+")");
-    //BIND (IRI ( REPLACE(str(?goid),"http://purl.org/obo/owl/GO#","http://purl.obolibrary.org/obo/GO_")) AS ?obogoid)
-    return [blockConstraintByNode,''];
+    let service = new AskomicsUserAbstraction().getAttribRelation(this.uri,new AskomicsUserAbstraction().longRDF("askomicsns:hasUrlExternalService"));
+
+    if ( service !== '' ) {
+      service = 'SERVICE <'+service+'>';
+    }
+    return [blockConstraintByNode,service];
   }
 
   instanciateVariateSPARQL(variates) {

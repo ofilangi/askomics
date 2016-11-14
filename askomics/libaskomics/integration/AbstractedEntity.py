@@ -26,5 +26,6 @@ class AbstractedEntity(object):
         for the abstraction file generation.
         """
         turtle = self.get_uri() + " rdf:type owl:Class ;\n"
+        turtle = self.get_uri() + ' askomicsns:entity "true"^^xsd:boolean ;\n'
         turtle += (len(self.get_uri()) + 1) * " " + "rdfs:label \"" + self.label + "\" .\n\n"
         return turtle

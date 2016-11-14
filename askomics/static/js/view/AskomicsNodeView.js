@@ -39,7 +39,7 @@ class AskomicsNodeView extends AskomicsObjectView {
       let VarDisplay = mythis.node.getAttributesDisplaying();
 
       if (VarDisplay.label.length>0) {
-        
+
         mess += '<h5>Displaying attributes</h5>';
         for (let v=0 ; v < VarDisplay.label.length-1; v++ ) {
           mess += VarDisplay.label[v]+",";
@@ -77,12 +77,12 @@ class AskomicsNodeView extends AskomicsObjectView {
 
     inp.attr("list", "opt_" + labelSparqlVarId)
        .attr("sparqlid",URISparqlVarId);
-    //console.log(JSON.stringify(nameDiv));
+
     var service = new RestServiceJs("sparqlquery");
     var model = {
       'variates': tab[0],
       'constraintesRelations': tab[1],
-      'limit' :-1,
+      'limit' :100,
       'export':false,
     };
 
@@ -576,12 +576,8 @@ class AskomicsNodeView extends AskomicsObjectView {
 
 /* ===============================================================================================*/
   create() {
-    var mythis = this;
-    var node = this.node;
-
-     var elemUri = node.uri,
-          //elemId  = node.SPARQLid,
-          nameDiv = this.prefix+node.SPARQLid ;
+    let mythis = this;
+    let node = this.node;
 
       this.divPanelUlSortable() ;
 
@@ -590,6 +586,7 @@ class AskomicsNodeView extends AskomicsObjectView {
       let lab = $("<label></label>").attr("urinode",node.uri).attr("uri",node.uri).attr("for",node.label).html(node.label);
       node.switchRegexpMode(node.SPARQLid);
 
+/*
       mythis.addPanel($('<div></div>')
              .attr("id",node.id)
              .attr("sparqlid",node.SPARQLid)
@@ -602,12 +599,12 @@ class AskomicsNodeView extends AskomicsObjectView {
              .append(mythis.makeLinkVariableIcon(node.SPARQLid))
              .append(mythis.buildString(node.SPARQLid))
              .append(mythis.buildLinkVariable(node)));
-
+*/
       var attributes = new AskomicsUserAbstraction().getAttributesWithURI(node.uri);
 
       $.each(attributes, function(i) {
           let attribute = node.getAttributeOrCategoryForNode(attributes[i]);
-
+          console.log("ATTRIBUTES:"+JSON.stringify(attribute));
           var lab = $("<label></label>").attr("uri",attribute.uri).attr("for",attribute.label).text(attribute.label);
 
           if ( attribute.basic_type == "category" ) {

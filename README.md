@@ -14,7 +14,7 @@ AskOmics is available under two supports : Docker and VM Virtualbox.
 
 Run Virtuoso using the tenforce/virtuoso docker image.
 
-`docker run docker run -d --name virtuoso -p 8890:8890 -p 1111:1111  -e VIRT_Parameters_DirsAllowed="/data,/data/dumps,., /usr/local/virtuoso-opensource/share/virtuoso/vad" -e VIRT_Parameters_TN_MAX_memory=4000000000 -e VIRT_SPARQL_ResultSetMaxRows=100000 -e VIRT_SPARQL_MaxQueryCostEstimationTime=300 -e VIRT_SPARQL_MaxQueryExecutionTime=300 -e VIRT_SPARQL_MaxDataSourceSize=1000000000 -e VIRT_Flags_TN_MAX_memory=4000000000 -e DBA_PASSWORD=dba -e SPARQL_UPDATE=true -e DEFAULT_GRAPH=http://localhost:8890/DAV --net="host" -t tenforce/virtuoso`
+`docker run -d --name virtuoso -p 8890:8890 -p 1111:1111  -e VIRT_Parameters_DirsAllowed="/data,/data/dumps,., /usr/local/virtuoso-opensource/share/virtuoso/vad" -e VIRT_Parameters_TN_MAX_memory=4000000000 -e VIRT_SPARQL_ResultSetMaxRows=100000 -e VIRT_SPARQL_MaxQueryCostEstimationTime=300 -e VIRT_SPARQL_MaxQueryExecutionTime=300 -e VIRT_SPARQL_MaxDataSourceSize=1000000000 -e VIRT_Flags_TN_MAX_memory=4000000000 -e DBA_PASSWORD=dba -e SPARQL_UPDATE=true -e DEFAULT_GRAPH=http://localhost:8890/DAV --net="host" -t tenforce/virtuoso`
 
 Run AskOmics using the askomics/askomics docker image
 
@@ -28,7 +28,7 @@ download the last image of AskOmics (http://)
  * Run the virtual machine
 
 Askomics is now available on your local machine !
-If needed (but normaly you need'nt) to log inside the machine use the account login `askomics` and password `askomics`.
+If needed (but normaly you needn't) to log inside the machine use the account login `askomics` and password `askomics`.
 The VM is reachable with a SSH connexion :
 ssh -p 3022 askomics:askomics@localhost
 

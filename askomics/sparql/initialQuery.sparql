@@ -3,7 +3,8 @@ WHERE {
     GRAPH <urn:sparql:tests-askomics:insert:informative1> {
     ?g rdfg:subGraphOf <urn:sparql:tests-askomics:insert:informative1> }
     GRAPH ?g {
-        ?nodeUri displaySetting:startPoint "true"^^xsd:boolean .
+        ?nodeUri askomicsns:entity "true"^^xsd:boolean .
+        ?nodeUri askomicsns:startPoint "true"^^xsd:boolean .
         ?nodeUri rdfs:label ?nodeLabel
     }
 }

@@ -3,6 +3,7 @@
 class AskomicsResultsView {
   constructor(data) {
     this.data = data ;
+
     this.activesAttributes      = undefined ; // Attributes id by Node Id to Display
     this.activesAttributesLabel = undefined ; // Attributes label by Node Id to Display
     this.activesAttributesUrl   = undefined ; // Url when results is clickable
@@ -279,9 +280,11 @@ class AskomicsResultsView {
         for (let sparqlId in this.activesAttributes[node.id]) {
           let headerName = this.activesAttributes[node.id][sparqlId];
           let val = this.data.values[i][this.activesAttributes[node.id][sparqlId]];
+
           if ( headerName in this.activesAttributesUrl[node.id] ) {
+            let valWithPrefix = new AskomicsUserAbstraction().shortRDF(val);
             let url = this.activesAttributesUrl[node.id][headerName].replace("%s",this.data.values[i][this.activesAttributes[node.id][sparqlId]]);
-            row.append($('<td></td>').html($('<a></a>').attr('href',url).attr('target','_blank').text(val)));
+            row.append($('<td></td>').html($('<a></a>').attr('href',url).attr('target','_blank').text(valWithPrefix)));
           } else {
             row.append($('<td></td>').text(val));
           }
@@ -291,5 +294,15 @@ class AskomicsResultsView {
     }
     return body;
   }
-
+/*
+  getValueWithPrefix(val) {
+    let prefix = new AskomicsUserAbstraction().prefix ;
+    for ( let p in prefix ) {
+      if ( val.search(prefix[p]) != -1 ) {
+        return val.replace(prefix[p],p+":");
+      }
+    }
+    return val;
+  }
+*/
 }

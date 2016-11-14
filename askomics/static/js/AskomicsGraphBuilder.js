@@ -361,6 +361,9 @@ let instanceGraphBuilder ;
       let dup_node_array = $.extend(true, [], this._instanciedNodeGraph);
       let dup_link_array = $.extend(true, [], this._instanciedLinkGraph);
 
+      let currentService = '---- noservice ---';
+      let concatConstr = [];
+
       for (let idx=0;idx<this._instanciedNodeGraph.length;idx++) {
         var node = dup_node_array[idx];
         /* find relation with this node and add it as a constraint  */
@@ -368,8 +371,16 @@ let instanceGraphBuilder ;
 
           if ( (dup_link_array[ilx].source.id == node.id) ||  (dup_link_array[ilx].target.id == node.id) ) {
             let blockConstraintByLink = [] ;
-
-            blockConstraint.push(dup_link_array[ilx].buildConstraintsSPARQL());
+            let bcs = dup_link_array[ilx].buildConstraintsSPARQL();
+            if ( bcs[1] === currentService ) {
+              concatConstr = concatConstr.concat(bcs[0]);
+            } else {
+              if ( concatConstr.length > 0 ) {
+                blockConstraint.push([concatConstr,currentService]);
+              }
+              concatConstr = bcs[0] ;
+              currentService = bcs[1];
+            }
             dup_link_array[ilx].instanciateVariateSPARQL(variates);
 
             //remove link to avoid to add two same constraint
@@ -377,10 +388,25 @@ let instanceGraphBuilder ;
           }
         }
         let blockConstraintByNode = [] ;
+        let bcs = node.buildConstraintsSPARQL();
+        if ( bcs[1] === currentService ) {
+          concatConstr = concatConstr.concat(bcs[0]);
+        } else {
+          if ( concatConstr.length > 0 ) {
+            blockConstraint.push([concatConstr,currentService]);
+          }
+          concatConstr = bcs[0] ;
+          currentService = bcs[1];
+        }
         /* adding constraints about attributs about the current node */
-        blockConstraint.push(node.buildConstraintsSPARQL());
+        //blockConstraint.push(node.buildConstraintsSPARQL());
         node.instanciateVariateSPARQL(variates);
       }
+
+      if ( concatConstr.length > 0 ) {
+        blockConstraint.push([concatConstr,currentService]);
+      }
+
       return [variates,[blockConstraint,'']] ;
     }
   }

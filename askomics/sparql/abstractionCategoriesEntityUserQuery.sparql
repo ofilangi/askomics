@@ -3,10 +3,9 @@ WHERE {
     GRAPH <urn:sparql:tests-askomics:insert:informative1> {
     ?g rdfg:subGraphOf <urn:sparql:tests-askomics:insert:informative1> }
     GRAPH ?g {
-        ?entity rdf:type owl:Class .
-	        ?typeCategory displaySetting:category [] .
-
-        ?category rdf:type owl:ObjectProperty;
+        ?entity askomicsns:entity "true"^^xsd:boolean .
+        ?category askomicsns:attribute "true"^^xsd:boolean ;
+                    rdf:type owl:ObjectProperty;
                     rdfs:label ?labelCategory ;
                     rdfs:domain ?entity;
                     rdfs:range ?typeCategory.

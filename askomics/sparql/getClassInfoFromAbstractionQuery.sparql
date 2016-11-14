@@ -3,7 +3,7 @@ WHERE {
     GRAPH <urn:sparql:tests-askomics:insert:informative1> {
     ?g rdfg:subGraphOf <urn:sparql:tests-askomics:insert:informative1> }
     GRAPH ?g {
-        ?class rdf:type owl:Class .
+        ?class askomicsns:entity "true"^^xsd:boolean .
         OPTIONAL { ?relation rdfs:domain ?class } .
         OPTIONAL { ?relation rdfs:range ?range } .
         OPTIONAL { ?relation rdfs:label ?relation_label } .

@@ -66,28 +66,28 @@ class AskomicsPositionableLink extends AskomicsLink {
 
     /* constrainte to target the same ref */
     if (this.position_ref) {
-      blockConstraint.push("?"+'URI'+node.SPARQLid+" "+ ":position_ref"+" "+ "?ref_"+node.SPARQLid);
-      blockConstraint.push("?"+'URI'+secondNode.SPARQLid+" "+ ":position_ref"+" "+ "?ref_"+secondNode.SPARQLid);
+      blockConstraint.push("?"+node.SPARQLid+" "+ ":position_ref"+" "+ "?ref_"+node.SPARQLid);
+      blockConstraint.push("?"+secondNode.SPARQLid+" "+ ":position_ref"+" "+ "?ref_"+secondNode.SPARQLid);
     }
 
     /* constrainte to target the same taxon */
     if (this.position_taxon) {
-      blockConstraint.push("?"+'URI'+node.SPARQLid+" "+ ":position_taxon"+" "+ "?taxon_"+node.SPARQLid);
-      blockConstraint.push("?"+'URI'+secondNode.SPARQLid+" "+ ":position_taxon"+" "+ "?taxon_"+secondNode.SPARQLid);
+      blockConstraint.push("?"+node.SPARQLid+" "+ ":position_taxon"+" "+ "?taxon_"+node.SPARQLid);
+      blockConstraint.push("?"+secondNode.SPARQLid+" "+ ":position_taxon"+" "+ "?taxon_"+secondNode.SPARQLid);
     }
 
     /* constraint to target the same/opposite strand */
     if (this.position_strand) {
-      blockConstraint.push("?"+'URI'+node.SPARQLid+" "+ ":position_strand"+" "+ "?strand_"+node.SPARQLid);
-      blockConstraint.push("?"+'URI'+secondNode.SPARQLid+" "+ ":position_strand"+" "+ "?strand_"+secondNode.SPARQLid);
+      blockConstraint.push("?"+node.SPARQLid+" "+ ":position_strand"+" "+ "?strand_"+node.SPARQLid);
+      blockConstraint.push("?"+secondNode.SPARQLid+" "+ ":position_strand"+" "+ "?strand_"+secondNode.SPARQLid);
     }
 
     /* manage start and end variates */
-    blockConstraint.push("?"+'URI'+node.SPARQLid+" "+ ":position_start"+" "+ "?start_"+node.SPARQLid);
-    blockConstraint.push("?"+'URI'+node.SPARQLid+" "+ ":position_end"+" "+ "?end_"+node.SPARQLid);
+    blockConstraint.push("?"+node.SPARQLid+" "+ ":position_start"+" "+ "?start_"+node.SPARQLid);
+    blockConstraint.push("?"+node.SPARQLid+" "+ ":position_end"+" "+ "?end_"+node.SPARQLid);
 
-    blockConstraint.push("?"+'URI'+secondNode.SPARQLid+" "+ ":position_start"+" "+ "?start_"+secondNode.SPARQLid);
-    blockConstraint.push("?"+'URI'+secondNode.SPARQLid+" "+ ":position_end"+" "+ "?end_"+secondNode.SPARQLid);
+    blockConstraint.push("?"+secondNode.SPARQLid+" "+ ":position_start"+" "+ "?start_"+secondNode.SPARQLid);
+    blockConstraint.push("?"+secondNode.SPARQLid+" "+ ":position_end"+" "+ "?end_"+secondNode.SPARQLid);
 
     this.buildFiltersSPARQL(blockConstraint);
     return [blockConstraint,''];

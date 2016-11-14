@@ -31,11 +31,19 @@ class AskomicsLink extends GraphLink {
     let blockConstraintByNode = [];
     let rel = this.URI();
     if ( this.transitive ) rel += "+";
-    blockConstraintByNode.push("?"+'URI'+this.source.SPARQLid+" "+rel+" "+"?"+'URI'+this.target.SPARQLid);
+    blockConstraintByNode.push("?"+this.source.SPARQLid+" "+rel+" "+"?"+this.target.SPARQLid);
     if ( this.negative ) {
       blockConstraintByNode = [blockConstraintByNode,'FILTER NOT EXISTS'];
     }
-    return [blockConstraintByNode,''];
+
+    let service = new AskomicsUserAbstraction().getAttribRelation(this.uri,new AskomicsUserAbstraction().longRDF("askomicsns:hasUrlExternalService"));
+
+    if ( service !== '' ) {
+      //service = new TriplestoreParametersView().config.endpoint;
+      service = 'SERVICE <'+service+'>';
+    }
+
+    return [blockConstraintByNode,service];
   }
 
   instanciateVariateSPARQL(variates) {
@@ -43,5 +51,5 @@ class AskomicsLink extends GraphLink {
   }
 
   getLinkStrokeColor() { return super.getLinkStrokeColor(); }
-  
+
 }

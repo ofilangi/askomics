@@ -86,7 +86,7 @@ class SparqlQueryBuilder(ParamManager):
         return self.prepare_query(
             """SELECT ?p (COUNT(?p) AS ?pTotal) WHERE {
             GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
-            GRAPH ?g { ?node displaySetting:startPoint "true"^^xsd:boolean . }}""")
+            GRAPH ?g { ?node askomicsns:startPoint "true"^^xsd:boolean . }}""")
 
     def get_delete_query_string(self, graph):
         return self.prepare_query(
@@ -120,7 +120,7 @@ class SparqlQueryBuilder(ParamManager):
         """SELECT DISTINCT ?exist
         WHERE {
             GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
-            BIND(EXISTS {<"""+uri+"""> displaySetting:is_positionable "true"^^xsd:boolean} AS ?exist)
+            BIND(EXISTS {<"""+uri+"""> askomicsns:is_positionable "true"^^xsd:boolean} AS ?exist)
         }""")
 
     def get_common_positionable_attributes(self, uri1, uri2):
