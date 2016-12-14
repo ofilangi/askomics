@@ -8,14 +8,14 @@ from collections import defaultdict
 from itertools import count
 import os.path
 import tempfile
-import time
+import datetime
 import getpass
 import urllib.parse
 from pkg_resources import get_distribution
 
 from askomics.libaskomics.ParamManager import ParamManager
 from askomics.libaskomics.rdfdb.SparqlQueryBuilder import SparqlQueryBuilder
-from askomics.libaskomics.rdfdb.QueryLauncher import QueryLauncher
+from askomics.libaskomics.rdfdb.QueryLauncherBuilder import QueryLauncherBuilder
 from askomics.libaskomics.utils import cached_property, HaveCachedProperties, pformat_generic_object
 from askomics.libaskomics.integration.AbstractedEntity import AbstractedEntity
 from askomics.libaskomics.integration.AbstractedRelation import AbstractedRelation
@@ -31,15 +31,12 @@ class SourceFile(ParamManager, HaveCachedProperties):
     def __init__(self, settings, session, path, preview_limit):
 
         ParamManager.__init__(self, settings, session)
-
-        self.timestamp = str(time.time())
-
         self.path = path
 
         # The name should not contain extension as dots are not allowed in rdf names
         self.name = os.path.splitext(os.path.basename(path))[0]
         # FIXME check name uniqueness as we remove extension (collision if uploading example.tsv and example.txt)
-
+        self.isotime = datetime.datetime.now().isoformat()
         self.preview_limit = preview_limit
 
         self.forced_column_types = ['entity']
@@ -285,7 +282,7 @@ class SourceFile(ParamManager, HaveCachedProperties):
 
         if all(types in self.forced_column_types for types in ('start', 'end')): # a positionable entity have to have a start and a end
             #ttl += ":" + urllib.parse.quote(self.headers[0]) + ' askomicsns:is_positionable "true"^^xsd:boolean ;\n'
-            ttl += ":" + urllib.parse.quote(self.headers[0]) + "askomicsns:hasOwnClassVisualisation 'AskomicsPositionableNode' .\n"
+            ttl += ":" + urllib.parse.quote(self.headers[0]) + " askomicsns:hasOwnClassVisualisation 'AskomicsPositionableNode' .\n"
             #ttl += ":is_positionable rdfs:label 'is_positionable' .\n"
             #ttl += ":is_positionable rdf:type owl:ObjectProperty .\n"
 
@@ -425,7 +422,7 @@ class SourceFile(ParamManager, HaveCachedProperties):
         """
         self.log.debug("====== INSERT METADATAS ======")
         sqb = SparqlQueryBuilder(self.settings, self.session)
-        ql = QueryLauncher(self.settings, self.session)
+        ql = QueryLauncherBuilder(self.settings, self.session).get()
 
         ttlMetadatas = "<" + self.metadatas['graphName'] + "> " + "prov:generatedAtTime " + '"' + self.metadatas['loadDate'] + '"^^xsd:dateTime .\n'
         ttlMetadatas += "<" + self.metadatas['graphName'] + "> " + "dc:creator " + '"' + self.metadatas['username'] + '"^^xsd:string  .\n'
@@ -435,7 +432,7 @@ class SourceFile(ParamManager, HaveCachedProperties):
 
         sparqlHeader = sqb.header_sparql_config("")
 
-        ql.insert_data(ttlMetadatas, self.get_param("askomics.graph"), sparqlHeader)
+        ql.insert_data(ttlMetadatas, self.get_selected_graph(), sparqlHeader)
 
     @cached_property
     def existing_relations(self):
@@ -449,7 +446,7 @@ class SourceFile(ParamManager, HaveCachedProperties):
         existing_relations = []
 
         sqb = SparqlQueryBuilder(self.settings, self.session)
-        ql = QueryLauncher(self.settings, self.session)
+        ql = QueryLauncherBuilder(self.settings, self.session).get()
 
         sparql_template = self.get_template_sparql(self.ASKOMICS_get_class_info_from_abstraction_queryFile)
         query = sqb.load_from_file(sparql_template, {"nodeClass": self.headers[0]}).query
@@ -525,7 +522,7 @@ class SourceFile(ParamManager, HaveCachedProperties):
         """
         content_ttl = self.get_turtle()
 
-        ql = QueryLauncher(self.settings, self.session)
+        ql = QueryLauncherBuilder(self.settings, self.session).get()
 
         # use insert data instead of load sparql procedure when the dataset is small
         total_triple_count = 0
@@ -597,9 +594,7 @@ class SourceFile(ParamManager, HaveCachedProperties):
         else:
 
             sqb = SparqlQueryBuilder(self.settings, self.session)
-
-
-            graphName = "urn:sparql:" + self.name + '_' + self.timestamp
+            graphName = self.build_new_graph_name(self.name,self.isotime)
 
             triple_count = 0
             chunk = ""
@@ -651,15 +646,15 @@ class SourceFile(ParamManager, HaveCachedProperties):
             except Exception as e:
                 return self._format_exception(e)
 
-            ttlNamedGraph = "<" + graphName + "> " + "rdfg:subGraphOf" + " <" + self.get_param("askomics.graph") + "> ."
+            ttlNamedGraph = "<" + graphName + "> " + "rdfg:subGraphOf" + " <" + self.get_selected_graph() + "> ."
             self.metadatas['graphName'] = graphName
             sparqlHeader = sqb.header_sparql_config("")
-            ql.insert_data(ttlNamedGraph, self.get_param("askomics.graph"), sparqlHeader)
+            ql.insert_data(ttlNamedGraph, self.get_selected_graph(), sparqlHeader)
 
             data = {}
 
             self.metadatas['server'] = queryResults.info()['server']
-            self.metadatas['loadDate'] = self.timestamp
+            self.metadatas['loadDate'] = self.isotime
 
             data['status'] = 'ok'
             data['total_triple_count'] = total_triple_count
@@ -681,12 +676,14 @@ class SourceFile(ParamManager, HaveCachedProperties):
             fp.flush() # This is required as otherwise, data might not be really written to the file before being sent to triplestore
 
         sqb = SparqlQueryBuilder(self.settings, self.session)
-        ql = QueryLauncher(self.settings, self.session)
-        graphName = "urn:sparql:" + self.name + '_' + self.timestamp
+        ql = QueryLauncherBuilder(self.settings, self.session).get()
+
+        graphName = self.build_new_graph_name(self.name,self.isotime)
+
         self.metadatas['graphName'] = graphName
-        ttlNamedGraph = "<" + graphName + "> " + "rdfg:subGraphOf" + " <" + self.get_param("askomics.graph") + "> ."
+        ttlNamedGraph = "<" + graphName + "> " + "rdfg:subGraphOf" + " <" + self.get_selected_graph() + "> ."
         sparqlHeader = sqb.header_sparql_config("")
-        ql.insert_data(ttlNamedGraph, self.get_param("askomics.graph"), sparqlHeader)
+        ql.insert_data(ttlNamedGraph, self.get_selected_graph(), sparqlHeader)
 
         url = urlbase+"/ttl/"+os.path.basename(fp.name)
         self.log.debug(url)
@@ -695,11 +692,11 @@ class SourceFile(ParamManager, HaveCachedProperties):
             if self.is_defined("askomics.file_upload_url"):
                 queryResults = ql.upload_data(fp.name, graphName)
                 self.metadatas['server'] = queryResults.headers['Server']
-                self.metadatas['loadDate'] = self.timestamp
+                self.metadatas['loadDate'] = self.isotime
             else:
                 queryResults = ql.load_data(url, graphName)
                 self.metadatas['server'] = queryResults.info()['server']
-                self.metadatas['loadDate'] = self.timestamp
+                self.metadatas['loadDate'] = self.isotime
             data['status'] = 'ok'
         except Exception as e:
             self._format_exception(e, data=data)

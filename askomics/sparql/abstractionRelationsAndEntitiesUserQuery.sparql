@@ -1,14 +1,9 @@
 SELECT DISTINCT ?subject ?relation ?object
 WHERE {
-    GRAPH <urn:sparql:tests-askomics:insert:informative1> {
-    ?g rdfg:subGraphOf <urn:sparql:tests-askomics:insert:informative1> .
-    }
-  ####  GRAPH ?g {
       ?relation rdf:type owl:ObjectProperty;
                 rdfs:domain ?subject;
                 rdfs:range ?object.
 
       ?subject askomicsns:entity "true"^^xsd:boolean .
       ?object askomicsns:entity "true"^^xsd:boolean .
-  ####  }
 }

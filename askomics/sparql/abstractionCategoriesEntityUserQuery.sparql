@@ -1,8 +1,5 @@
 SELECT DISTINCT ?entity ?category ?labelCategory ?typeCategory
 WHERE {
-    GRAPH <urn:sparql:tests-askomics:insert:informative1> {
-    ?g rdfg:subGraphOf <urn:sparql:tests-askomics:insert:informative1> }
-    GRAPH ?g {
         ?entity askomicsns:entity "true"^^xsd:boolean .
         ?category askomicsns:attribute "true"^^xsd:boolean ;
                     rdf:type owl:ObjectProperty;
@@ -11,5 +8,4 @@ WHERE {
                     rdfs:range ?typeCategory.
 
 	    VALUES ?entity { $entities }
-    }
 }

@@ -19,11 +19,12 @@ from askomics.libaskomics.ParamManager import ParamManager
 from askomics.libaskomics.TripleStoreExplorer import TripleStoreExplorer
 from askomics.libaskomics.SourceFileConvertor import SourceFileConvertor
 from askomics.libaskomics.rdfdb.SparqlQueryBuilder import SparqlQueryBuilder
-from askomics.libaskomics.rdfdb.QueryLauncher import QueryLauncher
+from askomics.libaskomics.rdfdb.QueryLauncherBuilder import QueryLauncherBuilder
 from askomics.libaskomics.rdfdb.ResultsBuilder import ResultsBuilder
 from askomics.libaskomics.source_file.SourceFile import SourceFile
 
-@view_defaults(renderer='json', route_name='start_point')
+
+@view_defaults(renderer='json')
 class AskView(object):
     """ This class contains method calling the libaskomics functions using parameters from the js web interface (body variable) """
 
@@ -38,10 +39,20 @@ class AskView(object):
         """ Get the nodes being query starters """
         self.log.debug("== START POINT ==")
         data = {}
-        tse = TripleStoreExplorer(self.settings, self.request.session)
+        try:
+            # create user if does not exist
+            ql = QueryLauncherBuilder(self.settings, self.request.session).get()
+            ql.create_user_account()
 
-        nodes = tse.get_start_points()
-        data["nodes"] = {n['uri']: n for n in nodes}
+            tse = TripleStoreExplorer(self.settings, self.request.session)
+
+            nodes = tse.get_start_points()
+            data["nodes"] = {n['uri']: n for n in nodes}
+
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            data['error'] = traceback.format_exc(limit=8)+"\n\n\n"+str(e)
+            self.log.error(str(e))
 
         return data
 
@@ -53,7 +64,7 @@ class AskView(object):
         pm = ParamManager(self.settings, self.request.session)
 
         sqb = SparqlQueryBuilder(self.settings, self.request.session)
-        ql = QueryLauncher(self.settings, self.request.session)
+        ql = QueryLauncherBuilder(self.settings, self.request.session).get()
         tse = TripleStoreExplorer(self.settings, self.request.session)
 
         results = ql.process_query(sqb.get_statistics_number_of_triples().query)
@@ -128,7 +139,7 @@ class AskView(object):
         self.log.debug("=== DELETE ALL TRIPLES ===")
         try:
             sqb = SparqlQueryBuilder(self.settings, self.request.session)
-            ql = QueryLauncher(self.settings, self.request.session)
+            ql = QueryLauncherBuilder(self.settings, self.request.session).get()
 
             namedGraphs = self.get_list_named_graphs()
             namedGraphs.append(ql.get_param("askomics.graph"))
@@ -150,7 +161,7 @@ class AskView(object):
         self.log.debug("=== DELETE SELECTED GRAPHS ===")
 
         sqb = SparqlQueryBuilder(self.settings, self.request.session)
-        ql = QueryLauncher(self.settings, self.request.session)
+        ql = QueryLauncherBuilder(self.settings, self.request.session).get()
 
         graphs = self.request.json_body['namedGraphs']
 
@@ -169,7 +180,7 @@ class AskView(object):
         self.log.debug("=== LIST OF NAMED GRAPHS ===")
 
         sqb = SparqlQueryBuilder(self.settings, self.request.session)
-        ql = QueryLauncher(self.settings, self.request.session)
+        ql = QueryLauncherBuilder(self.settings, self.request.session).get()
 
         res = ql.execute_query(sqb.get_list_named_graphs().query)
 
@@ -191,7 +202,7 @@ class AskView(object):
         data = {}
 
         sqb = SparqlQueryBuilder(self.settings, self.request.session)
-        ql = QueryLauncher(self.settings, self.request.session)
+        ql = QueryLauncherBuilder(self.settings, self.request.session).get()
 
         # Check if the two entity are positionable
         positionable1 = ql.process_query(sqb.get_if_positionable(body['node']).query)
@@ -438,7 +449,7 @@ class AskView(object):
 
 
             # Provide results file
-            ql = QueryLauncher(self.settings, self.request.session)
+            ql = QueryLauncherBuilder(self.settings, self.request.session).get()
             rb = ResultsBuilder(self.settings, self.request.session)
             data['file'] = ql.format_results_csv(rb.build_csv_table(results))
         except Exception as e:
