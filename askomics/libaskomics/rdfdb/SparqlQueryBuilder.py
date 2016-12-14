@@ -33,7 +33,7 @@ class SparqlQueryBuilder(ParamManager):
             The `$graph` variable defaults to "askomics.graph" config
         """
         if 'graph' not in replacement:
-            replacement['graph'] = '<%s>' % self.get_param("askomics.graph")
+            replacement['graph'] = '<%s>' % self.get_selected_graph()
 
         query = Template(template).substitute(replacement)
 
@@ -44,48 +44,48 @@ class SparqlQueryBuilder(ParamManager):
     def get_statistics_number_of_triples(self):
         return self.prepare_query(
             """SELECT (COUNT(?s) AS ?no) WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
+            GRAPH <"""+self.get_selected_graph()+"""> { ?g rdfg:subGraphOf <"""+self.get_selected_graph()+""">}
             GRAPH ?g { ?s ?p ?o }}""")
 
     def get_statistics_number_of_triples_AskOmics_graphs(self):
         return self.prepare_query(
             """SELECT (COUNT(?s) AS ?no) WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?s ?p ?o}}""")
+            GRAPH <"""+self.get_selected_graph()+"""> { ?s ?p ?o}}""")
 
     def get_statistics_number_of_entities(self):
         return self.prepare_query(
             """SELECT (COUNT(distinct ?s) AS ?no) WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
+            GRAPH <"""+self.get_selected_graph()+"""> { ?g rdfg:subGraphOf <"""+self.get_selected_graph()+""">}
             GRAPH ?g { ?s a [] }}""")
 
     def get_statistics_number_of_graphs(self):
         return self.prepare_query(
             """SELECT (COUNT(distinct ?g) AS ?no) WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
+            GRAPH <"""+self.get_selected_graph()+"""> { ?g rdfg:subGraphOf <"""+self.get_selected_graph()+""">}
             GRAPH ?g { ?s ?p ?o } }""")
 
     def get_statistics_distinct_classes(self):
         return self.prepare_query(
             """SELECT (COUNT(distinct ?o) AS ?no) WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
+            GRAPH <"""+self.get_selected_graph()+"""> { ?g rdfg:subGraphOf <"""+self.get_selected_graph()+""">}
             GRAPH ?g { ?s rdf:type ?o }}""")
 
     def get_statistics_list_classes(self):
         return self.prepare_query(
             """SELECT DISTINCT ?class WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
+            GRAPH <"""+self.get_selected_graph()+"""> { ?g rdfg:subGraphOf <"""+self.get_selected_graph()+""">}
             GRAPH ?g { ?s a ?classVar. ?classVar rdfs:label ?class. }}""")
 
     def get_statistics_nb_instances_by_classe(self):
         return self.prepare_query(
             """SELECT ?class (COUNT(distinct ?s) AS ?count ) WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
+            GRAPH <"""+self.get_selected_graph()+"""> { ?g rdfg:subGraphOf <"""+self.get_selected_graph()+""">}
             GRAPH ?g { ?s a ?classVar. ?classVar rdfs:label ?class. }} GROUP BY ?class ORDER BY ?count""")
 
     def get_statistics_by_startpoint(self):
         return self.prepare_query(
             """SELECT ?p (COUNT(?p) AS ?pTotal) WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
+            GRAPH <"""+self.get_selected_graph()+"""> { ?g rdfg:subGraphOf <"""+self.get_selected_graph()+""">}
             GRAPH ?g { ?node askomicsns:startPoint "true"^^xsd:boolean . }}""")
 
     def get_delete_query_string(self, graph):
@@ -95,7 +95,7 @@ class SparqlQueryBuilder(ParamManager):
     def get_list_named_graphs(self):
         return self.prepare_query(
             """SELECT DISTINCT ?g WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
+            GRAPH <"""+self.get_selected_graph()+"""> { ?g rdfg:subGraphOf <"""+self.get_selected_graph()+""">}
             GRAPH ?g { ?s ?p ?o } }""")
 
     def get_drop_named_graph(self, graph):
@@ -105,13 +105,13 @@ class SparqlQueryBuilder(ParamManager):
     def get_delete_metadatas_of_graph(self, graph):
         return self.prepare_query(
             """
-            DELETE WHERE { GRAPH <"""+self.get_param("askomics.graph")+"""> { <"""+graph+"""> ?p ?o }}
+            DELETE WHERE { GRAPH <"""+self.get_selected_graph()+"""> { <"""+graph+"""> ?p ?o }}
             """)
 
     def get_metadatas(self, graph):
         return self.prepare_query(
         """SELECT DISTINCT ?p ?o
-            WHERE {	GRAPH <"""+self.get_param("askomics.graph")+""">
+            WHERE {	GRAPH <"""+self.get_selected_graph()+""">
 		        { <""" + graph + """> ?p ?o
                 VALUES ?p {prov:generatedAtTime dc:creator dc:hasVersion prov:describesService prov:wasDerivedFrom} } }""")
 
@@ -119,7 +119,6 @@ class SparqlQueryBuilder(ParamManager):
         return self.prepare_query(
         """SELECT DISTINCT ?exist
         WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
             BIND(EXISTS {<"""+uri+"""> askomicsns:is_positionable "true"^^xsd:boolean} AS ?exist)
         }""")
 
@@ -127,7 +126,6 @@ class SparqlQueryBuilder(ParamManager):
         return self.prepare_query(
         """SELECT DISTINCT ?uri ?pos_attr ?status
         WHERE {
-            GRAPH <"""+self.get_param("askomics.graph")+"""> { ?g rdfg:subGraphOf <"""+self.get_param("askomics.graph")+""">}
             VALUES ?pos_attr {:position_taxon :position_ref :position_strand }
             VALUES ?uri {<"""+uri1+"""> <"""+uri2+"""> }
             BIND(EXISTS {?pos_attr rdfs:domain ?uri} AS ?status)

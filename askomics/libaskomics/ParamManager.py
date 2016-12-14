@@ -50,8 +50,24 @@ class ParamManager(object):
         return self.session["upload_directory"]
 
     def get_user_data_file(self, filename):
-
         return self.get_source_file_directory() + "/" + filename
+
+    def get_private_graph(self):
+        return self.get_param("askomics.graph")+"/private/"+self.get_param("askomics.endpoint.username")
+
+    def get_public_graph(self):
+        return self.get_param("askomics.graph")+"/public"
+
+    def get_selected_graph(self):
+        if self.is_defined("askomics.endpoint.username") and self.is_defined("askomics.admin.login"):
+            if self.get_param("askomics.endpoint.username") == self.get_param("askomics.admin.login"):
+                return self.get_public_graph()
+            return self.get_private_graph();
+
+        return self.get_param("askomics.graph");
+
+    def build_new_graph_name(self,name,timestamp):
+        return self.get_selected_graph()+"/"+ name + '/' + timestamp ;
 
     def get_ttl_directory(self):
         if not os.path.isdir(self.ASKOMICS_ttl_directory):

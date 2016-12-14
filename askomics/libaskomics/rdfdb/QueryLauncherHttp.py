@@ -6,7 +6,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 import requests
 import logging
 
-from askomics.libaskomics.ParamManager import ParamManager
+from askomics.libaskomics.rdfdb.QueryLauncherInterface import QueryLauncherInterface
 
 class SPARQLError(RuntimeError):
     """
@@ -16,21 +16,23 @@ class SPARQLError(RuntimeError):
         self.status_code = response.status_code
         super().__init__(response.text)
 
-class QueryLauncher(ParamManager):
+class QueryLauncherHttp(QueryLauncherInterface):
     """
-    The QueryLauncher process sparql queries:
+    The QueryLauncherHttp process sparql queries:
         - execute_query send the query to the sparql endpoint specified in params.
         - parse_results preformat the query results
         - format_results_csv write in the tabulated result file a table obtained
           from these preformated results using a ResultsBuilder instance.
     """
 
-    def __init__(self, settings, session):
-        ParamManager.__init__(self, settings, session)
 
-        self.log = logging.getLogger(__name__)
+    def create_user_account(self):
+        pass
 
-    def execute_query(self, query, log_raw_results=True):
+    def delete_user_account(self):
+        pass
+
+    def execute_query(self, query, user = None , passwd = None, log_raw_results=True):
         """Params:
             - libaskomics.rdfdb.SparqlQuery
             - log_raw_results: if True the raw json response is logged. Set to False
@@ -51,14 +53,17 @@ class QueryLauncher(ParamManager):
         else:
             raise ValueError("askomics.endpoint")
 
-        if self.is_defined("askomics.endpoint.username") and self.is_defined("askomics.endpoint.passwd"):
-            user = self.get_param("askomics.endpoint.username")
-            passwd = self.get_param("askomics.endpoint.passwd")
+        if user == None and passwd == None:
+            if self.is_defined("askomics.endpoint.username") and self.is_defined("askomics.endpoint.passwd"):
+                user = self.get_param("askomics.endpoint.username")
+                passwd = self.get_param("askomics.endpoint.passwd")
+                data_endpoint.setCredentials(user, passwd)
+            elif self.is_defined("askomics.endpoint.username"):
+                raise ValueError("askomics.endpoint.passwd")
+            elif self.is_defined("askomics.endpoint.passwd"):
+                raise ValueError("askomics.endpoint.username")
+        else:
             data_endpoint.setCredentials(user, passwd)
-        elif self.is_defined("askomics.endpoint.username"):
-            raise ValueError("askomics.passwd")
-        elif self.is_defined("askomics.endpoint.passwd"):
-            raise ValueError("askomics.username")
 
         if self.is_defined("askomics.endpoint.auth"):
             data_endpoint.setHTTPAuth(self.get_param("askomics.endpoint.auth")) # Basic or Digest
@@ -112,8 +117,8 @@ class QueryLauncher(ParamManager):
         return parsed
 
 
-    def process_query(self, query):
-        json_query = self.execute_query(query, log_raw_results=False)
+    def process_query(self, query, user = None , passwd = None):
+        json_query = self.execute_query(query,user,passwd,log_raw_results=False)
 
         results = self.parse_results(json_query)
         return results
@@ -140,6 +145,7 @@ class QueryLauncher(ParamManager):
 
         return res
 
+    # TODO: implement a QueryLauncherFuseki and implement the load_data with this methods !!!
     def upload_data(self, filename, graphName):
         """
         Load a ttl file into the triple store using requests module and Fuseki

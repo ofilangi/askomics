@@ -5,7 +5,7 @@ import logging
 from askomics.libaskomics.ParamManager import ParamManager
 
 from askomics.libaskomics.rdfdb.SparqlQueryBuilder import SparqlQueryBuilder
-from askomics.libaskomics.rdfdb.QueryLauncher import QueryLauncher
+from askomics.libaskomics.rdfdb.QueryLauncherBuilder import QueryLauncherBuilder
 
 
 class TripleStoreExplorer(ParamManager):
@@ -36,7 +36,7 @@ class TripleStoreExplorer(ParamManager):
         nodes = []
 
         sqb = SparqlQueryBuilder(self.settings, self.session)
-        ql = QueryLauncher(self.settings, self.session)
+        ql = QueryLauncherBuilder(self.settings, self.session).get()
         sparql_template = self.get_template_sparql(self.ASKOMICS_initial_query)
         query = sqb.load_from_file(sparql_template, {}).query
         results = ql.process_query(query)
@@ -67,7 +67,7 @@ class TripleStoreExplorer(ParamManager):
             listEntities[node['uri']]=0
 
         sqb = SparqlQueryBuilder(self.settings, self.session)
-        ql = QueryLauncher(self.settings, self.session)
+        ql = QueryLauncherBuilder(self.settings, self.session).get()
 
         sparql_template = self.get_template_sparql(self.ASKOMICS_abstractionsRelationsAndEntitiesUser)
         query = sqb.load_from_file(sparql_template, {}).query
@@ -151,7 +151,7 @@ class TripleStoreExplorer(ParamManager):
         self.log.debug(constraintesRelations)
 
         sqb = SparqlQueryBuilder(self.settings, self.session)
-        ql = QueryLauncher(self.settings, self.session)
+        ql = QueryLauncherBuilder(self.settings, self.session).get()
         res = ql.execute_query(sqb.get_list_named_graphs().query)
 
         namedGraphs = []
@@ -178,7 +178,7 @@ class TripleStoreExplorer(ParamManager):
         results = {}
 
         if sendRequestToTPS:
-            ql = QueryLauncher(self.settings, self.session)
+            ql = QueryLauncherBuilder(self.settings, self.session).get()
             results = ql.process_query(query)
         else:
             # add comment inside query to inform user
